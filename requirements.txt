@@ -1,0 +1,12 @@
+# Reachy-Mini SDK with simulation support
+reachy-mini[mujoco]>=1.2.11
+
+# Optional extras (uncomment as needed)
+# reachy-mini[examples]      # Code examples
+# reachy-mini[nn-kinematics] # Neural network kinematics
+# reachy-mini[rerun]         # Visualization
+
+# Common dependencies for programs
+numpy>=1.24.0
+transformers>=4.30.0
+speechrecognition>=3.10.0
