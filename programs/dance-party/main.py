@@ -5,16 +5,23 @@ Reachy-Mini dances and sings in an infinite loop!
 Each cycle is ~5 seconds.
 
 Press Ctrl+C to stop.
+
+Uses Hugging Face MMS-TTS for realistic text-to-speech.
 """
 
 import os
+import sys
 import time
 import random
+
+# Add shared modules to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 USE_SIM = os.environ.get("REACHY_MINI_SIM", "0") == "1"
 
 from reachy_mini import ReachyMini
 from reachy_mini.utils import create_head_pose
+from shared.tts import say_async
 
 
 def get_robot():
@@ -36,18 +43,8 @@ def move(robot, z=0, roll=0, duration=0.2):
 
 
 def say(robot, text):
-    """Say something (works in sim and real)."""
-    print(f"  {text}")
-    # Use Mac's text-to-speech in simulation, robot speaker on real robot
-    try:
-        if USE_SIM:
-            # Use macOS built-in text-to-speech
-            import subprocess
-            subprocess.Popen(["say", text])
-        else:
-            robot.say(text)
-    except:
-        pass
+    """Say something using Hugging Face TTS (non-blocking)."""
+    say_async(text, robot)
 
 
 # =============================================================================
