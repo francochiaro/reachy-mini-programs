@@ -38,11 +38,16 @@ def move(robot, z=0, roll=0, duration=0.2):
 def say(robot, text):
     """Say something (works in sim and real)."""
     print(f"  {text}")
-    if not USE_SIM:
-        try:
+    # Use Mac's text-to-speech in simulation, robot speaker on real robot
+    try:
+        if USE_SIM:
+            # Use macOS built-in text-to-speech
+            import subprocess
+            subprocess.Popen(["say", text])
+        else:
             robot.say(text)
-        except:
-            pass
+    except:
+        pass
 
 
 # =============================================================================
