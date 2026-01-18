@@ -9,3 +9,5 @@ progress.txt
 # OS files
 .DS_Store
 venv/
+__pycache__/
+*.pyc
