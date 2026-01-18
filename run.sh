@@ -52,23 +52,27 @@ list_programs() {
 }
 
 start_sim_daemon() {
-    # Check if daemon is already running
-    if pgrep -f "reachy-mini-daemon" > /dev/null; then
+    # Check if daemon is already running (via mjpython or direct)
+    if pgrep -f "reachy_mini.daemon" > /dev/null; then
         echo -e "${YELLOW}Simulation daemon already running${NC}"
         return 0
     fi
 
-    echo -e "${BLUE}Starting simulation daemon (headless)...${NC}"
-    reachy-mini-daemon --sim --headless > /dev/null 2>&1 &
+    echo -e "${BLUE}Starting MuJoCo simulator (visual mode)...${NC}"
+    # Use mjpython for visual window on macOS
+    "$SCRIPT_DIR/venv/bin/mjpython" -m reachy_mini.daemon.app.main --sim > /dev/null 2>&1 &
     DAEMON_PID=$!
 
     # Wait for daemon to be ready
-    echo -n "Waiting for daemon"
-    for i in {1..10}; do
+    echo -n "Waiting for simulator"
+    for i in {1..15}; do
         sleep 1
         echo -n "."
-        if pgrep -f "reachy-mini-daemon" > /dev/null; then
+        if pgrep -f "reachy_mini.daemon" > /dev/null; then
+            # Extra wait for daemon to fully initialize
+            sleep 3
             echo -e " ${GREEN}ready${NC}"
+            echo -e "${BLUE}MuJoCo window should be visible${NC}"
             return 0
         fi
     done
@@ -77,9 +81,9 @@ start_sim_daemon() {
 }
 
 stop_sim_daemon() {
-    if pgrep -f "reachy-mini-daemon" > /dev/null; then
+    if pgrep -f "reachy_mini.daemon" > /dev/null; then
         echo -e "${YELLOW}Stopping simulation daemon...${NC}"
-        pkill -f "reachy-mini-daemon" 2>/dev/null || true
+        pkill -f "reachy_mini.daemon" 2>/dev/null || true
     fi
 }
 
