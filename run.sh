@@ -51,6 +51,38 @@ list_programs() {
     echo ""
 }
 
+start_sim_daemon() {
+    # Check if daemon is already running
+    if pgrep -f "reachy-mini-daemon" > /dev/null; then
+        echo -e "${YELLOW}Simulation daemon already running${NC}"
+        return 0
+    fi
+
+    echo -e "${BLUE}Starting simulation daemon (headless)...${NC}"
+    reachy-mini-daemon --sim --headless > /dev/null 2>&1 &
+    DAEMON_PID=$!
+
+    # Wait for daemon to be ready
+    echo -n "Waiting for daemon"
+    for i in {1..10}; do
+        sleep 1
+        echo -n "."
+        if pgrep -f "reachy-mini-daemon" > /dev/null; then
+            echo -e " ${GREEN}ready${NC}"
+            return 0
+        fi
+    done
+    echo -e " ${RED}failed${NC}"
+    return 1
+}
+
+stop_sim_daemon() {
+    if pgrep -f "reachy-mini-daemon" > /dev/null; then
+        echo -e "${YELLOW}Stopping simulation daemon...${NC}"
+        pkill -f "reachy-mini-daemon" 2>/dev/null || true
+    fi
+}
+
 run_program() {
     local program="$1"
     local sim_mode="$2"
@@ -74,12 +106,13 @@ run_program() {
         pip install -q -r "$program_dir/requirements.txt"
     fi
 
-    # Set simulation environment variable if requested
+    # Set simulation environment variable and start daemon if needed
     if [ "$sim_mode" = "true" ]; then
-        echo -e "${BLUE}Starting in SIMULATION mode...${NC}"
+        echo -e "${BLUE}SIMULATION MODE${NC}"
         export REACHY_MINI_SIM=1
+        start_sim_daemon || exit 1
     else
-        echo -e "${GREEN}Starting on REAL ROBOT...${NC}"
+        echo -e "${GREEN}REAL ROBOT MODE${NC}"
         export REACHY_MINI_SIM=0
     fi
 
